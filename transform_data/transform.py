@@ -61,7 +61,7 @@ def extract_profile_data(raw_data: dict) -> dict:
     - skills: List of all skills including programming languages inferred from experience descriptions
     - years_experience: Total years of experience calculated from earliest date in work history up to {current_date}
     - worked_at_startup: Boolean indicating if they worked at startups
-    - job_vectors: List of job vector objects, one for each position in work history:
+    - positions: List of position objects, one for each position in work history:
       * vector_id: Empty string ""
       * org: Organization name
       * title: Job title
@@ -97,7 +97,7 @@ def extract_profile_data(raw_data: dict) -> dict:
         "skills": ai_profile.skills,
         "years_experience": ai_profile.years_experience,
         "worked_at_startup": ai_profile.worked_at_startup,
-        "job_vectors": [jv.model_dump() for jv in ai_profile.job_vectors],
+        "positions": [pos.model_dump() for pos in ai_profile.positions],
         "education": [edu.model_dump() for edu in ai_profile.education]
     }
 

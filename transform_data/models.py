@@ -1,5 +1,5 @@
 from typing import List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class Education(BaseModel):
@@ -8,7 +8,7 @@ class Education(BaseModel):
     field: str
 
 
-class JobVector(BaseModel):
+class Position(BaseModel):
     org: str
     title: str
     summary: str
@@ -25,4 +25,4 @@ class AIInferredProfile(BaseModel):
     years_experience: int
     worked_at_startup: bool
     education: List[Education]
-    job_vectors: List[JobVector]
+    positions: List[Position]
