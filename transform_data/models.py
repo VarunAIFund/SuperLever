@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 
@@ -9,9 +9,11 @@ class Education(BaseModel):
 
 
 class Position(BaseModel):
+    vector_embedding: str
     org: str
     title: str
     summary: str
+    location: str
 
 
 class AIInferredProfile(BaseModel):

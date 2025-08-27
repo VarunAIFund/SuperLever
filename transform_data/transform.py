@@ -22,10 +22,29 @@ def extract_profile_data(raw_data: dict) -> dict:
     # Extract fields directly from JSON data
     direct_fields = {
         "id": raw_data.get("id"),
-        "name": raw_data.get("name"),
-        "location": raw_data.get("location"),
+        "contact": raw_data.get("contact"),
+        "phones": raw_data.get("phones", []),
+        "emails": raw_data.get("emails", []),
+        "links": raw_data.get("links", []),
+        "archived": raw_data.get("archived"),
+        "stage": raw_data.get("stage"),
         "confidentiality": raw_data.get("confidentiality", "non-confidential"),
-        "tags": raw_data.get("tags", [])
+        "tags": raw_data.get("tags", []),
+        "sources": raw_data.get("sources", []),
+        "stageChanges": raw_data.get("stageChanges", []),
+        "origin": raw_data.get("origin"),
+        "sourcedBy": raw_data.get("sourcedBy"),
+        "owner": raw_data.get("owner"),
+        "followers": raw_data.get("followers", []),
+        "applications": raw_data.get("applications", []),
+        "createdAt": raw_data.get("createdAt"),
+        "updatedAt": raw_data.get("updatedAt"),
+        "lastInteractionAt": raw_data.get("lastInteractionAt"),
+        "lastAdvancedAt": raw_data.get("lastAdvancedAt"),
+        "snoozedUntil": raw_data.get("snoozedUntil"),
+        "urls": raw_data.get("urls"),
+        "isAnonymized": raw_data.get("isAnonymized"),
+        "dataProtection": raw_data.get("dataProtection")
     }
     
     # Job vectors and education will be extracted and translated by GPT from parsed_resume data
@@ -42,7 +61,7 @@ def extract_profile_data(raw_data: dict) -> dict:
         }
     }
     
-    print(f"Sending to GPT for {direct_fields['name']}: {json.dumps(relevant_data, indent=2)}")
+    print(f"Sending to GPT for {raw_data.get('name', 'Unknown')}: {json.dumps(relevant_data, indent=2)}")
     
     prompt = f"""
     Based on the following candidate data, extract and infer the remaining profile information.
@@ -62,10 +81,11 @@ def extract_profile_data(raw_data: dict) -> dict:
     - years_experience: Total years of experience calculated from earliest date in work history up to {current_date}
     - worked_at_startup: Boolean indicating if they worked at startups
     - positions: List of position objects, one for each position in work history:
-      * vector_id: Empty string ""
+      * vector_embedding: Empty string ""
       * org: Organization name
       * title: Job title
       * summary: Job summary
+      * location: Position location
     - education: List of education objects with properly cleaned information:
       * school: Just the university/institution name
       * degree: Just the degree level
@@ -87,17 +107,45 @@ def extract_profile_data(raw_data: dict) -> dict:
     return {
         "id": direct_fields["id"],
         "name": ai_profile.name,
-        "location": ai_profile.location,
+        "contact": direct_fields["contact"],
         "headline": ai_profile.headline,
+        "stage": direct_fields["stage"],
         "confidentiality": direct_fields["confidentiality"],
+        "location": ai_profile.location,
+        "phones": direct_fields["phones"],
+        "emails": direct_fields["emails"],
+        "links": direct_fields["links"],
+        "archived": direct_fields["archived"],
         "tags": direct_fields["tags"],
+        "sources": direct_fields["sources"],
+        "stageChanges": direct_fields["stageChanges"],
+        "origin": direct_fields["origin"],
+        "sourcedBy": direct_fields["sourcedBy"],
+        "owner": direct_fields["owner"],
+        "followers": direct_fields["followers"],
+        "applications": direct_fields["applications"],
+        "createdAt": direct_fields["createdAt"],
+        "updatedAt": direct_fields["updatedAt"],
+        "lastInteractionAt": direct_fields["lastInteractionAt"],
+        "lastAdvancedAt": direct_fields["lastAdvancedAt"],
+        "snoozedUntil": direct_fields["snoozedUntil"],
+        "urls": direct_fields["urls"],
+        "isAnonymized": direct_fields["isAnonymized"],
+        "dataProtection": direct_fields["dataProtection"],
         "current_title": ai_profile.current_title,
         "current_org": ai_profile.current_org,
         "seniority": ai_profile.seniority,
         "skills": ai_profile.skills,
         "years_experience": ai_profile.years_experience,
         "worked_at_startup": ai_profile.worked_at_startup,
-        "positions": [pos.model_dump() for pos in ai_profile.positions],
+        "positions": [
+            {
+                **pos.model_dump(),
+                "start": orig_pos.get("start"),
+                "end": orig_pos.get("end")
+            }
+            for pos, orig_pos in zip(ai_profile.positions, raw_data.get("parsed_resume", {}).get("positions", []))
+        ],
         "education": [edu.model_dump() for edu in ai_profile.education]
     }
 
@@ -132,7 +180,7 @@ def process_candidates(input_file: str, output_file: str):
                 json.dump(existing_profiles, f, indent=2)
             
             processed_count += 1
-            print(f"✓ Saved profile for {profile.get('name', 'Unknown')} ({processed_count} total)")
+            print(f"✓ Saved profile for {profile['name']} ({processed_count} total)")
             
         except Exception as e:
             print(f"✗ Error processing candidate {candidate.get('id', 'unknown')}: {str(e)}")
