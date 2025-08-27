@@ -73,7 +73,7 @@ def extract_profile_data(raw_data: dict) -> dict:
     Please extract and return a JSON object with:
     - name: Person's name (translated to English if needed)
     - headline: Professional headline or current role (translated to English if needed)
-    - location: Location information (translated to English if needed)
+    - location: Location information standardized to "City, State/Province, Country" format. If any component is missing, include what's available. If remote work, use "Remote". If completely blank, leave blank.
     - current_title: Current job title from most recent position
     - current_org: Current organization from most recent position
     - seniority: Seniority level (e.g., Entry, Junior, Mid, Senior, Staff, Principal, Executive,etc.) based on titles and experience
@@ -85,7 +85,7 @@ def extract_profile_data(raw_data: dict) -> dict:
       * org: Organization name
       * title: Job title
       * summary: Job summary
-      * location: Position location
+      * location: Position location standardized to "City, State/Province, Country" format. If any component is missing, include what's available. If remote work, use "Remote". If completely blank, leave blank.
     - education: List of education objects with properly cleaned information:
       * school: Just the university/institution name
       * degree: Just the degree level
