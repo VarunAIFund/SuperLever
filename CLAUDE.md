@@ -44,6 +44,13 @@ python test_set.py
 ```
 Extracts first 10 candidates from batch data to test.json.
 
+### Location-based Search
+```bash
+cd transform_data
+python location_example.py
+```
+Adds coordinates to candidate profiles and demonstrates geographic search capabilities.
+
 ## Architecture Notes
 
 The transformation pipeline:
@@ -58,3 +65,12 @@ The transformation pipeline:
 - Test subset workflow: extract sample → transform → validate structure
 - Error handling included for malformed candidate records
 - Confidentiality levels preserved from source data
+
+## Location Services
+
+The `location_utils.py` module provides geographic search capabilities:
+- Geocoding: Convert location strings to coordinates using OpenStreetMap
+- Radius search: Find candidates within X miles of a location
+- Distance calculation: Calculate distances between candidates and office locations
+- City grouping: Analyze candidate distribution by city
+- Rate-limited API calls with caching for efficiency

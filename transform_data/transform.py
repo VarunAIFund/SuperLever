@@ -4,6 +4,7 @@ from typing import List
 from openai import OpenAI
 from models import AIInferredProfile
 from dotenv import load_dotenv
+from datetime import datetime
 
 # Load .env from parent directory
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
@@ -14,6 +15,9 @@ def extract_profile_data(raw_data: dict) -> dict:
     """
     Transform raw Lever candidate data into structured PersonProfile using direct extraction and OpenAI for remaining fields
     """
+    
+    # Get current date
+    current_date = datetime.now().strftime("%B %d, %Y")
     
     # Extract fields directly from JSON data
     direct_fields = {
@@ -39,18 +43,29 @@ def extract_profile_data(raw_data: dict) -> dict:
     # Education will be extracted by GPT from schools data
     
     # Use OpenAI only for fields that need inference
+    # Extract only relevant data for GPT processing
+    relevant_data = {
+        "headline": raw_data.get("headline", ""),
+        "parsed_resume": {
+            "positions": raw_data.get("parsed_resume", {}).get("positions", []),
+            "schools": raw_data.get("parsed_resume", {}).get("schools", [])
+        }
+    }
+    
+    print(f"Sending to GPT for {direct_fields['name']}: {json.dumps(relevant_data, indent=2)}")
+    
     prompt = f"""
     Based on the following candidate data, extract and infer the remaining profile information.
     
-    Raw candidate data:
-    {json.dumps(raw_data, indent=2)}
+    Candidate data:
+    {json.dumps(relevant_data, indent=2)}
     
     Please extract and return a JSON object with:
     - current_title: Current job title from most recent position
     - current_org: Current organization from most recent position  
     - seniority: Seniority level (e.g., Entry, Junior, Mid, Senior, Staff, Principal, Executive,etc.) based on titles and experience
     - skills: List of all skills including programming languages inferred from experience descriptions
-    - years_experience: Total years of experience calculated from work history
+    - years_experience: Total years of experience calculated from earlisest date in work history up to {current_date}
     - worked_at_startup: Boolean indicating if they worked at startups
     - education: List of education objects with properly cleaned:
       * school: Just the university/institution name (e.g., "Stanford" not "Stanford University Department of Computer Science")
