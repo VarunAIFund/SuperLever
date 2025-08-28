@@ -14,12 +14,16 @@ Usage:
 import sys
 import json
 import re
+import os
 from typing import List, Dict, Any, Optional
 from openai import OpenAI
+from dotenv import load_dotenv
+
+# Add transform_data directory to Python path to find our modules
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'transform_data'))
+
 from db_config import get_db_connection, test_connection
 from db_schema_info import get_schema_context
-import os
-from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
