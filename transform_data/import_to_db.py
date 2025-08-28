@@ -163,16 +163,24 @@ def insert_candidate_batch(cursor, candidates_data: List[Dict[str, Any]]):
             raise e
 
 def insert_positions_batch(cursor, positions_data: List[Dict[str, Any]]):
-    """Bulk insert positions"""
+    """Insert positions with upsert logic - delete existing then insert new"""
     if not positions_data:
         return
     
+    # Get unique candidate IDs from this batch
+    candidate_ids = list(set(pos['candidate_id'] for pos in positions_data))
+    
+    # Delete existing positions for these candidates
+    if candidate_ids:
+        delete_sql = "DELETE FROM positions WHERE candidate_id = ANY(%s::uuid[])"
+        cursor.execute(delete_sql, (candidate_ids,))
+    
+    # Insert new positions
     insert_sql = """
         INSERT INTO positions (
             candidate_id, vector_embedding, org, title, summary, short_summary,
             location, start_date, end_date, start_json, end_json, position_order
         ) VALUES %s
-        ON CONFLICT DO NOTHING
     """
     
     values = []
@@ -189,14 +197,22 @@ def insert_positions_batch(cursor, positions_data: List[Dict[str, Any]]):
     )
 
 def insert_education_batch(cursor, education_data: List[Dict[str, Any]]):
-    """Bulk insert education records"""
+    """Insert education with upsert logic - delete existing then insert new"""
     if not education_data:
         return
     
+    # Get unique candidate IDs from this batch
+    candidate_ids = list(set(edu['candidate_id'] for edu in education_data))
+    
+    # Delete existing education for these candidates
+    if candidate_ids:
+        delete_sql = "DELETE FROM education WHERE candidate_id = ANY(%s::uuid[])"
+        cursor.execute(delete_sql, (candidate_ids,))
+    
+    # Insert new education records
     insert_sql = """
         INSERT INTO education (candidate_id, school, degree, field) 
         VALUES %s
-        ON CONFLICT DO NOTHING
     """
     
     values = []
