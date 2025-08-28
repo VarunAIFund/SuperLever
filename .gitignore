@@ -1,6 +1,7 @@
 data/
 
 *.json
+*.txt
 
 # Environment variables
 .env
