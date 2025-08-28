@@ -79,32 +79,19 @@ def generate_sql_query(natural_query: str) -> str:
     Use ChatGPT to convert natural language query to SQL
     """
     system_prompt = f"""
-    You are a PostgreSQL expert. Convert natural language queries into complete SQL SELECT statements that return candidate records.
+You are a SQL generator. Output ONLY valid PostgreSQL SQL queries. No explanations, no code blocks, no formatting.
 
-    {get_schema_context()}
+{get_schema_context()}
 
-    CRITICAL REQUIREMENTS:
-    1. Always return candidate records from the candidates table
-    2. ALWAYS include WHERE clause when filtering is needed
-    3. Use appropriate JOINs when filtering by positions or education 
-    4. Include relevant candidate fields: id, name, location, seniority, skills, etc.
-    5. Use proper PostgreSQL syntax for arrays and text search
-    6. ALWAYS end with LIMIT 100 to prevent huge result sets
-    7. Return ONLY the complete SQL query with WHERE clause, no explanation
-    8. If no filtering is specified, still include LIMIT 100
+RULES:
+- Always SELECT from candidates table
+- Use JOINs for positions/education filtering
+- Include WHERE clauses for filtering
+- End with LIMIT 100
+- Output only the SQL query
     """
 
-    user_prompt = f"""
-    Convert this natural language query to PostgreSQL SQL:
-    
-    "{natural_query}"
-    
-    Generate a complete SELECT statement with WHERE clause if filtering is needed.
-    Example: "candidates in San Francisco" should become:
-    SELECT id, name, location, seniority, skills FROM candidates WHERE location ILIKE '%San Francisco%' LIMIT 100;
-    
-    Return ONLY the complete SQL query.
-    """
+    user_prompt = f"{natural_query}\n\nSQL:"
 
     try:
         completion = client.chat.completions.create(
@@ -113,11 +100,14 @@ def generate_sql_query(natural_query: str) -> str:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=0.1  # Low temperature for consistent SQL generation
+            temperature=0.1
         )
         
-        sql_response = completion.choices[0].message.content
-        sql_query = extract_sql_from_response(sql_response)
+        sql_query = completion.choices[0].message.content.strip()
+        
+        # Remove any potential SQL prefix if present
+        if sql_query.startswith('SQL:'):
+            sql_query = sql_query[4:].strip()
         
         return sql_query
         
