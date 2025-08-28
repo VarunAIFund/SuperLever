@@ -5,7 +5,7 @@ import psycopg2
 from contextlib import contextmanager
 
 # Database configuration
-DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://localhost:5432/superlever_candidates')
+DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://postgres:HvItNdUpgZBcIhRRMwhoXBbjgwkibQcF@shuttle.proxy.rlwy.net:48898/railway?sslmode=require')
 
 def get_engine():
     """Create SQLAlchemy engine for database operations"""
