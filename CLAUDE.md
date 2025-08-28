@@ -175,3 +175,49 @@ The `location_utils.py` module provides geographic search capabilities:
 - Distance calculation: Calculate distances between candidates and office locations
 - City grouping: Analyze candidate distribution by city
 - Rate-limited API calls with caching for efficiency
+
+## Location Standardization System
+
+### Location Data Extraction and Standardization
+```bash
+# Extract locations from test data
+cd location
+python extract_location.py
+
+# Extract all unique locations from batch files (001-121)
+python extract_batch_locations.py
+
+# Standardize locations using LocationIQ API
+python standardize_location.py
+
+# Test specific problematic location cases
+python test_specific_cases.py
+```
+
+### Location Processing Pipeline
+1. **Extraction**: Extract unique locations from all candidate records (~200k candidates)
+2. **Frequency Analysis**: Count location occurrences and rank by frequency
+3. **API Standardization**: Use LocationIQ Geocoding API to standardize location formats
+4. **Format Normalization**: Convert to "City, State/Province, Country" format
+5. **Progress Persistence**: Save results incrementally to prevent data loss
+
+### Location Standardization Features
+- **Rate Limiting**: Respects LocationIQ 2 requests/second limit with 0.5s delays
+- **Resume Capability**: Can resume from interrupted standardization sessions
+- **Format Consistency**: Standardizes to "City, State/Province, Country" format
+- **Duplicate Handling**: Removes duplicate location components
+- **Error Handling**: Marks failed standardizations as "FAILED" for manual review
+- **Progress Tracking**: Shows real-time progress during processing
+
+### Output Files
+- `batch_locations_001_121.json`: All unique locations with metadata and frequency counts
+- `standardized_batch_locations.json`: Location mappings (original → standardized)
+- `standardized_locations.txt`: Human-readable format of standardization results
+- `locations_by_frequency.txt`: Locations sorted by occurrence frequency
+
+### API Integration
+Uses LocationIQ Geocoding API with comprehensive address component extraction:
+- City detection priority: city > town > village > suburb
+- State/Province handling: state > province > county  
+- Country standardization using API's canonical country names
+- Fallback to cleaned display_name when component extraction fails
