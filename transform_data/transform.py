@@ -71,12 +71,10 @@ def extract_profile_data(raw_data: dict) -> dict:
     {json.dumps(relevant_data, indent=2)}
     
     Please extract and return a JSON object with:
-    - name: Person's name (translated to English if needed)
-    - headline: Professional headline or current role (translated to English if needed)
+    - name: Person's name
+    - headline: Professional headline or current role
     - location: Location information standardized to "City, State/Province, Country" format. If any component is missing, include what's available. If remote work, use "Remote". If completely blank, leave blank.
-    - current_title: Current job title from most recent position
-    - current_org: Current organization from most recent position
-    - seniority: Seniority level (e.g., Entry, Junior, Mid, Senior, Staff, Principal, Executive,etc.) based on titles and experience
+    - seniority: Seniority level (choose from: Intern, Entry, Junior, Mid, Senior, Lead, Manager, Director, VP, C-Level) based on titles and experience
     - skills: List of all skills including programming languages inferred from experience descriptions
     - years_experience: Total years of experience calculated from earliest date in work history up to {current_date}
     - worked_at_startup: Boolean indicating if they worked at startups
@@ -85,7 +83,8 @@ def extract_profile_data(raw_data: dict) -> dict:
       * org: Organization name
       * title: Job title
       * summary: Job summary
-      * location: Position location standardized to "City, State/Province, Country" format. If any component is missing, include what's available. If remote work, use "Remote". If completely blank, leave blank.
+      * short_summary: Only generate this if the original summary field contains actual content. If the summary is empty or blank, leave this field blank. When summary content exists, generate a standardized, descriptive text that summarizes this work experience in one or two sentences explaining the candidate's role and responsibilities in a narrative format. 
+      * location: If completely blank, leave blank. Position location standardized to "City, State/Province, Country" format. If any component is missing, include what's available. If remote work, use "Remote".
     - education: List of education objects with properly cleaned information:
       * school: Just the university/institution name
       * degree: Just the degree level
@@ -132,8 +131,6 @@ def extract_profile_data(raw_data: dict) -> dict:
         "urls": direct_fields["urls"],
         "isAnonymized": direct_fields["isAnonymized"],
         "dataProtection": direct_fields["dataProtection"],
-        "current_title": ai_profile.current_title,
-        "current_org": ai_profile.current_org,
         "seniority": ai_profile.seniority,
         "skills": ai_profile.skills,
         "years_experience": ai_profile.years_experience,
